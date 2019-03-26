@@ -24,3 +24,5 @@ end
 puts reverse_words('') == ''
 puts reverse_words('Hello World') == 'World Hello'
 puts reverse_words('Reverse these words') == 'words these Reverse'
+
+# Notes: I persevered with this even though I knew it was not the most efficient way to go. This shows a thorough knowledge of Array methods is needed (my next quest!) 
