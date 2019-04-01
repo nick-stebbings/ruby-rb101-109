@@ -1,0 +1,9 @@
+en:
+  welcome: "Welcome to Calculator! Enter your name:"
+  valid_name: "Make sure to enter a valid name."
+  num1: "Please enter a number."
+es:
+  welcome: "Bienvenido a la calculadora! Entre su nombre:"
+  valid_name: "Asegúrese de entrar un nombre válido."
+  num1: "Entre su primer numero"
+# ... rest of file omitted for brevity
