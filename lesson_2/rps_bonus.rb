@@ -60,6 +60,7 @@ loop do
       break
     else
       prompt("That's not a valid choice.")
+      sleep(3)
     end
   end
 

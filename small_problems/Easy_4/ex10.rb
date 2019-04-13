@@ -28,18 +28,16 @@ def integer_to_string(number)
   result
 end
 def signed_integer_to_string(int)
-  str =''
   case
     when int == 0
-      str = '0'
+      puts integer_to_string(int)
     when int < 0
-      str = '-'
+      puts "-#{integer_to_string(-int)}"
     when int > 0
-      str = '+'
+      puts "+#{integer_to_string(int)}"
   end
-  p str << integer_to_string(int)
 end
 
-p signed_integer_to_string(4321) == '+4321'
-p signed_integer_to_string(-123) == '-123'
-p signed_integer_to_string(0) == '0'
+signed_integer_to_string(4321) == '+4321'
+signed_integer_to_string(-123) == '-123'
+signed_integer_to_string(0) == '0'

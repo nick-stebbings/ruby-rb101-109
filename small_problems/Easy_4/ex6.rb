@@ -5,15 +5,13 @@ def running_total(array)
   end
 end
 =end
-require 'pry'
 def running_total(array)
   results = []
   array.inject(0) do |sum,el|
-    binding.pry
-    sum + el
-    results << sum
+    results << (sum + el)
+    results.last
   end
-  p results
+  results
 end
 p running_total([2, 5, 13]) == [2, 7, 20]
 p running_total([14, 11, 7, 15, 20]) == [14, 25, 32, 47, 67]
