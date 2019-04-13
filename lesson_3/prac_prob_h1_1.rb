@@ -1,0 +1,1 @@
+# I thought that it would throw up an error since the variable is not defined. Now I see there is a different behaviour.

@@ -1,0 +1,1 @@
+# I did not predict the outcome of the first question, but the second one I did (where the value is taken from the end.)

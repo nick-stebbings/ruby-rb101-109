@@ -1,0 +1,2 @@
+['ant', 'bear', 'caterpillar'].pop.size
+# the return value will be the length of 'caterpillar', since the 'size' method has been chained on so it will act on the return value of pop (which is the removed element)
