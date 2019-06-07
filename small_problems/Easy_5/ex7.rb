@@ -17,7 +17,7 @@ def word_sizes_2(str)
     hash[word.size] += 1
   end
 end
-# get used to using gsub! with regexp, as it is a lot pithier than the above!S
+# Need to get used to using gsub! with regexp, as it is a lot pithier than the above!
 p word_sizes_2('Four score and seven.') == { 3 => 1, 4 => 1, 5 => 2 }
 p word_sizes_2('Hey diddle diddle, the cat and the fiddle!') == { 3 => 5, 6 => 3 }
 p word_sizes_2("What's up doc?") == { 5 => 1, 2 => 1, 3 => 1 }

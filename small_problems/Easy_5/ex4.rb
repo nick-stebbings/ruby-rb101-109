@@ -19,7 +19,6 @@ swap('a') == 'a'
 #           - iterate through array, using str.reverse on each element
 #           - join the new array
 #           - output the result
-require 'pry'
 # CODE:
 def swap(str)
   swap_words = str.split.map do |word|

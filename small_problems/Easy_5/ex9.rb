@@ -28,13 +28,15 @@ def crunch(string)
   end
   array.join('')
 end
-=end
 def crunch(string)
-  string.length == 1 ? string : string.chars.select.with_index{ |char, idx| (char != string[idx-1]) }.join('')
+  string.length == 1 ? string : string.chars.select.with_index{ |char, idx| (char != string[idx+1]) }.join('')
 end
-#tried a one liner but couldn't make it work for case 3 below :(
+=end
+def crunch(str)
+  str.scan(/((\w)\2*)/).map { |group| group.first[0] }.join
+end
 p crunch('ddaaiillyy ddoouubbllee') == 'daily double'
 p crunch('4444abcabccba') == '4abcabcba'
-p crunch('ggggggggggggggg')
+p crunch('ggggggggggggggg') =='g'
 p crunch('a') == 'a'
 p crunch('') == ''
