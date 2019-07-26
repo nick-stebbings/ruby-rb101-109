@@ -1,0 +1,2 @@
+Write a program that reads the content of a text file and then prints the longest sentence in the file based on number of words. Sentences may end with periods, exclamation points, or question marks! Any sequence of characters that are not spaces o sentence-ending characters should be treate das a word. You should also print the number of words in the longest sentence.
+Now I am going to type a sentence that has more than twenty seven words, just so that i can test the veracity and the verility and the fertility of my amazing coding antics up to this point (how was that..)?

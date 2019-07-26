@@ -15,7 +15,12 @@
 
 # CODE:
 def print_longest_sentence_1(filename)
-  File.open(filename, 'r').inspect
+  File.open(filename, 'r') do |file|
+    file.each do |line|
+      puts line
+      puts "------"
+    end
+  end
 end
 p print_longest_sentence_1('tdl.txt')
 
@@ -31,5 +36,5 @@ def print_longest_sentence(filename)
     puts "... is the longest sentence with #{longest.split(" ").size} words!"
   end
 end
-#print_longest_sentence("pg84.txt")
-#print_longest_sentence("tdl.txt")
+print_longest_sentence("pg84.txt")
+print_longest_sentence("tdl.txt")
