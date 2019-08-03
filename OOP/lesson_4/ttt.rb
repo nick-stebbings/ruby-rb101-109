@@ -1,8 +1,10 @@
+require 'pry'
 # Board
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                   [[1, 5, 9], [3, 5, 7]] # diagonals
+  INITIAL_MARKER = ' '.freeze
 
   def initialize
     @squares = {}
@@ -24,12 +26,16 @@ class Board
     puts '     |     |'
   end
 
-  def unmarked_keys
-    @squares.keys.select { |key| @squares[key].unmarked? }
+  def reset
+    (1..9).each { |key| @squares[key] = Square.new }
   end
 
   def []=(key, marker)
     @squares[key].marker = marker
+  end
+
+  def unmarked_keys
+    @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
   def full?
@@ -48,33 +54,25 @@ class Board
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
       if count_marker(squares, player_marker) == 2 && squares.any?(&:unmarked?)
-        empty_square = line.select { |sqr_no| @squares[sqr_no].unmarked? }
-        return empty_square[0] unless empty_square.empty?
+        last_square = line.find { |sqr_no| @squares[sqr_no].unmarked? }
+        return last_square
       end
     end
     nil
   end
 
-  def winning?(marker)
+  def three_identical_markers(type)
     WINNING_LINES.any? do |line|
-      squares = @squares.values_at(*line)
-      count_marker(squares, marker) == 3
+      board_squares = @squares.values_at(*line)
+      count_marker(board_squares, type) == 3
     end
-  end
-
-  def someone_won?
-    TTTGame::MARKERS.keys.any? { |marker| !!winning?(marker) }
-  end
-
-  def reset
-    (1..9).each { |key| @squares[key] = Square.new }
   end
 end
 # Square
 class Square
   attr_accessor :marker
 
-  def initialize(marker = TTTGame::SETTINGS[:initial_board_marker])
+  def initialize(marker = Board::INITIAL_MARKER)
     @marker = marker
   end
 
@@ -83,17 +81,15 @@ class Square
   end
 
   def unmarked?
-    marker == TTTGame::SETTINGS[:initial_board_marker]
+    marker == Board::INITIAL_MARKER
   end
 end
 # Player
 class Player
   attr_accessor :name, :marker
   attr_reader :score
-  @@num_players = 0
 
-  def initialize(marker, name = "Player #{@@num_players + 1}")
-    @@num_players += 1
+  def initialize(marker, name = 'Player')
     @marker = marker
     @name = name
     @score = 0
@@ -127,7 +123,6 @@ module TTTDisplay
              player_markers: "You're a #{human.marker}, #{computer.name}"\
                       " is a #{computer.marker}." }
     prompt msgs[type]
-    puts
   end
 
   def clear
@@ -146,9 +141,9 @@ module TTTDisplay
     display_board
   end
 
-  def display_result
+  def display_round_result
     display_board
-    case winning_marker
+    case find_winning_marker
     when human.marker
       puts 'You won!'
     when computer.marker
@@ -158,7 +153,7 @@ module TTTDisplay
     end
   end
 
-  def display_round_result
+  def display_match_score
     puts "(First to #{TTTGame::SETTINGS[:score_to_win]}) The scores are: \n"\
       "#{human.name} => #{human.score}, \
       #{computer.name} => #{computer.score}\n"
@@ -169,7 +164,7 @@ end
 class TTTGame # rubocop:disable Metrics/ClassLength
   attr_reader :board, :human, :computer
   # default game settings:
-  SETTINGS = {  initial_board_marker: ' ',
+  SETTINGS = {  initial_board_marker: Board::INITIAL_MARKER,
                 choose_marker: true,
                 choose_names: true,
                 first_to_move: :human,
@@ -177,8 +172,7 @@ class TTTGame # rubocop:disable Metrics/ClassLength
                 o_marker: 'O', # default for computer
                 offensive_ai: true,
                 score_to_win: 3 }.freeze
-  # Once markers are chosen, following constant is set for duration of match
-  MARKERS = { SETTINGS[:x_marker] => nil, SETTINGS[:o_marker] => nil }
+  @@markers = { SETTINGS[:x_marker] => nil, SETTINGS[:o_marker] => nil }
   include TTTDisplay
 
   def initialize
@@ -200,10 +194,6 @@ class TTTGame # rubocop:disable Metrics/ClassLength
     display_message(:goodbye)
   end
 
-  def find_outright_winner
-    MARKERS.values.find { |player| player.score == SETTINGS[:score_to_win] }
-  end
-
   private
 
   def game_prep
@@ -214,11 +204,11 @@ class TTTGame # rubocop:disable Metrics/ClassLength
 
   def player_setup
     @human.name = ask_name(:human) if SETTINGS[:choose_names]
-    choose_marker if SETTINGS[:choose_marker]
+    user_sets_markers if SETTINGS[:choose_marker]
     @computer.name = ask_name(:computer) if SETTINGS[:choose_names]
 
-    MARKERS.keys.each do |marker| # game engine storing who is who
-      MARKERS[marker] = (@human.marker == marker ? @human : @computer)
+    @@markers.keys.each do |marker| # game engine storing who is who
+      @@markers[marker] = (@human.marker == marker ? @human : @computer)
     end
   end
 
@@ -227,12 +217,12 @@ class TTTGame # rubocop:disable Metrics/ClassLength
     gets.chomp
   end
 
-  def choose_marker
-    prompt "Choose which marker would you like to be: #{joinor(MARKERS.keys)}"
+  def user_sets_markers
+    prompt "Choose which marker would you like to be: #{joinor(@@markers.keys)}"
     answer = nil
     loop do
       answer = gets.chomp
-      break if MARKERS.keys.include?(answer)
+      break if @@markers.keys.include?(answer)
       prompt 'Please choose one of the available markers.'
     end
     return nil unless answer == SETTINGS[:o_marker]
@@ -242,23 +232,23 @@ class TTTGame # rubocop:disable Metrics/ClassLength
 
   def play_a_round
     clear_screen_and_display_board
-    display_round_result
+    display_match_score
     loop do
       current_player_moves
-      break if board.someone_won? || board.full?
+      break if someone_won? || board.full?
       clear_screen_and_display_board if human_turn?
     end
   end
 
   def play_a_match
-    loop do # match loop
+    loop do
       play_a_round
-      award_score_point(MARKERS[winning_marker]) if board.someone_won?
+      award_score_point(@@markers[find_winning_marker]) if someone_won?
       clear
-      display_result
+      display_round_result
       sleep 2
       reset
-      break if find_outright_winner.class == Player
+      break if @@markers.values.include?(find_outright_winner)
     end
   end
 
@@ -278,7 +268,7 @@ class TTTGame # rubocop:disable Metrics/ClassLength
     board[square] = @human.marker
   end
 
-  def comp_detects_win_or_threat
+  def cpu_detects_winning_moves
     # Check attacking threat first, then defensive.
     # Change order of following array to make AI defensive
     check_order = [@computer, @human]
@@ -291,7 +281,7 @@ class TTTGame # rubocop:disable Metrics/ClassLength
   end
 
   def computer_moves
-    square = comp_detects_win_or_threat ||
+    square = cpu_detects_winning_moves ||
              (board.centre_free? ? 5 : board.unmarked_keys.sample)
     board[square] = computer.marker
   end
@@ -300,16 +290,26 @@ class TTTGame # rubocop:disable Metrics/ClassLength
     @current_player == :human
   end
 
-  def switch_player
-    @current_player = human_turn? ? :computer : :human
-  end
-
   def board_full?
     puts 'The board is full!'
   end
 
-  def winning_marker
-    MARKERS.keys.each { |marker| return marker if board.winning?(marker) }
+  def someone_won?
+    @@markers.keys.any? { |marker| !!board.three_identical_markers(marker) }
+  end
+
+  def switch_player
+    @current_player = human_turn? ? :computer : :human
+  end
+
+  def find_outright_winner
+    @@markers.values.find { |player| player.score == SETTINGS[:score_to_win] }
+  end
+
+  def find_winning_marker
+    @@markers.keys.each do |marker|
+      return marker if board.three_identical_markers(marker)
+    end
   end
 
   def award_score_point(player)
